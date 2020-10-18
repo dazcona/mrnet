@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    
+    <title>MRNet Exploration</title>
+    
+    <!-- meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Explore the MRNet dataset in an interactive way">
+    <meta property="og:title" content="MRNet Exploration: A Knee MRI Dataset And Competition">
+
+    <!-- favicon -->
+    <link rel="icon" href="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/232/face-with-head-bandage_1f915.png" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/main.css">
+    <link href="https://fonts.googleapis.com/css?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Fredoka+One&display=swap" rel="stylesheet">
+
+    <!-- jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- Popper.js, then Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+    <h1>Exploring MRIs</h1>
+    <h2>Dataset: Stanford's MRNet, A Knee MRI Dataset And Competition</h2>
+    <h3>Get to explore the dataset on the web!</h3>
+
+    <div class="container-fluid">
+
+        <select id="dropdown" onchange="dropdownOnChange()">
+            <option selected="selected" value="" disabled>Select patient...</option>
+        </select>
+
+        <div id="main" style="visibility: hidden;">
+
+            <p id="text"></p>
+
+            <div class="row">
+                <div class="col-sm">Axial <span id="span_axial"></span> out of <span id="span_axial_max"></span></div>
+                <div class="col-sm">Coronal <span id="span_coronal"></span> out of <span id="span_coronal_max"></span></div>
+                <div class="col-sm">Sagittal <span id="span_sagittal"></span> out of <span id="span_sagittal_max"></span></div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm"><img id="img_axial" alt="No Image" /></div>
+                <div class="col-sm"><img id="img_coronal" alt="No Image" /></div>
+                <div class="col-sm"><img id="img_sagittal" alt="No Image" /></div>
+            </div>
+
+            <br />
+
+            <div class="row">
+                <div class="col-sm"><input type="range" class="slider" id="slider_axial" name="axial" min="0" onchange="sliderOnChange(this);"></div>
+                <div class="col-sm"><input type="range" class="slider" id="slider_coronal" name="coronal" min="0" onchange="sliderOnChange(this);"></div>
+                <div class="col-sm"><input type="range" class="slider" id="slider_sagittal" name="sagittal" min="0" onchange="sliderOnChange(this);"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        
+        // VARIABLES
+
+        var NUM_CASES = 100;
+        var PLANES = [ 'axial', 'coronal', 'sagittal' ];
+
+        var select = document.getElementById("dropdown");
+        var text = document.getElementById("text");
+        var div = document.getElementById("main");
+
+        // HELPER FUNCTIONS
+
+        function FormatNumberLength(num, length = 4) {
+            var r = "" + num;
+            while (r.length < length) {
+                r = "0" + r;
+            }
+            return r;
+        }
+
+        // DROPDOWN
+
+        for (var i = 0; i < NUM_CASES; i++) {
+            var option = document.createElement("option");
+            var num = FormatNumberLength(i)
+            option.setAttribute("value", num);
+            option.text = num;
+            select.appendChild(option);
+        }
+
+        // DATA
+
+        var slices;
+
+        $.getJSON("MRNet-v1.0/slices.json", function(data) {
+            slices = data;
+        });
+
+        function getSlices(patient) {
+
+            if (slices && patient in slices) {
+                return slices[patient];
+            }
+        }
+
+        // PICTURES
+
+        function showPicture(patient, plane, slice) {
+            // Get image from plane
+            var img = document.getElementById('img_' + plane);
+            // Update src
+            img.src = 'pictures/' + patient + '-' + plane + '-' + slice + '.png';
+        }
+
+        // SLIDERS
+
+        var patient;
+
+        function setSliderMax(plane, patientSlices) {
+            // Get slider from plane
+            var slider = document.getElementById('slider_' + plane);
+            // Max value
+            let max_value = patientSlices[plane] - 1;
+            // Slider set max value
+            slider.max = max_value;
+            // Get span from plane
+            var span = document.getElementById('span_' + plane + '_max');
+            // Span set max value
+            span.textContent = max_value;
+        }
+
+        function setSliderValue(plane, slice) {
+            // Get slider from plane
+            var slider = document.getElementById('slider_' + plane);
+            // Set value
+            slider.value = slice;
+            // Get span from plane
+            var span = document.getElementById('span_' + plane);
+            // Set value
+            span.textContent = slice;
+        }
+
+        function sliderOnChange(item) {
+
+            // Slice
+            slice = item.value;
+            // Plance
+            plane = item.name;
+            // Get span from plane
+            var span = document.getElementById('span_' + plane);
+            // Set value
+            span.textContent = slice;
+            // Show it!
+            showPicture(patient, plane, slice);
+        }
+
+        function dropdownOnChange() {
+
+            // Value
+            patient = select.value;
+
+            if (patient != "") {
+
+                // Main Div
+                div.style.visibility='visible'
+
+                // Patient
+                text.innerHTML = "Patient: " + patient;
+
+                // Slices
+                patientSlices = getSlices(patient);
+
+                let current_slice = 1;
+
+                for (p in PLANES) {
+
+                    let plane = PLANES[p];
+
+                    // Set Slider MAX
+                    setSliderMax(plane, patientSlices);
+
+                    // Set Slider Value
+                    setSliderValue(plane, current_slice);
+
+                    // Show Pictures
+                    showPicture(patient, plane, current_slice);
+                }
+
+            }
+
+            else {
+
+                // Main Div
+                div.style.visibility='hidden'
+
+                // Patient
+                text.innerHTML = "";
+            }
+
+        }
+
+    </script> 
+
+    <script type="text/javascript" id="cookieinfo" src="js/cookieinfo.min.js"
+        data-message="Cookies🍪? We eat them, but we also use them to track visits to our website, we store no personal details. By continuing to visit this site you agree to our use of cookies. "
+        data-bg="#c4c4c4" data-fg="#000000" data-link="#000000"
+        data-moreinfo="https://en.wikipedia.org/wiki/HTTP_cookie" data-divlinkbg="#595959"
+        data-cookie="CookieInfoScript" data-close-text="🍪👍" data-font-family="Poppins-Medium">
+    </script>
+
+</body>
+
+</html>

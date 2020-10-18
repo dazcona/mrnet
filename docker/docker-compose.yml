@@ -1,0 +1,53 @@
+version: '2.3'
+
+services:
+
+  mrnet_container:
+    image: mrnet_image
+    container_name: mrnet_container
+    working_dir: /code
+    
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+
+    ipc: host
+
+    # Setup environment variables:
+    environment:
+      - PYTHONPATH=/code
+      # Uncomment the following line to plot images on Linux
+      - DISPLAY=unix$DISPLAY
+      # Set a password to your Jupyter Notebook
+      - PASSWORD=testpass
+
+    env_file:
+      - .env
+      
+    # Setup the ports you want to expose:
+    ports:
+      # Jupyter port
+      - "8888:8888"
+      - "8000:8000"
+
+    # Setup the volumes you want to share:
+    volumes:
+      - ../:/code
+
+    # Uncomment the following line to use an NVIDIA GPU (requires nvidia-docker)
+    runtime: nvidia
+
+    # By default this container stay alive without running any command 
+    # command: jupyter notebook --allow-root --ip=0.0.0.0
+    command: tail /dev/null -f
+
+  # Start a Tensorboard on localhost:6007 that process the logs folder
+  tensorboard:
+    image: tensorflow/tensorflow
+    container_name: tensorboard
+    working_dir: /logs
+    ports:
+     - "6007:6007"
+    volumes:
+      - ../logs:/logs
+    command: tensorboard --logdir /logs --port=6007

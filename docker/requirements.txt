@@ -1,0 +1,66 @@
+## Uncomment the Python packages you want to install
+
+## Data science:
+
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+seaborn
+# pyspark
+
+
+## Computer vision:
+
+# opencv-python
+pillow
+# scikit-image
+imageio
+# ffmpeg
+# moviepy
+
+
+## Data Augmentation
+
+albumentations
+imgaug
+augmentor
+git+https://github.com/ildoonet/pytorch-randaugment
+
+
+## Deep learning packages:
+
+# keras
+torchvision
+# tensorflow
+# tensorflow-gpu
+# tensorboard
+# Theano
+# fastai
+# Lasagne
+# tflearn
+# h5py
+
+
+## Other popular packages:
+
+# requests
+# ipython
+# Scrapy
+# nose
+jupyter
+# Flask
+# setuptools 
+# cmake
+tqdm
+
+## Utils:
+
+# xlrd
+# python-telegram-bot
+# wordcloud
+# progressbar
+# imutils
+telebot
+codalab

@@ -1,0 +1,15 @@
+## Uncomment the Linux packages you want to install
+
+nano
+git
+zip
+# vim
+# ssh
+# curl
+# python-setuptools
+# python-dev
+# python3-dev
+# libsm6
+# libxext6
+# libxrender-dev
+# python-tk
